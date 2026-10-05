@@ -129,6 +129,8 @@ CREATE TABLE Movimentacoes (
     DataMovimentacao DATETIME DEFAULT GETDATE()
 );
 
+-- Criação de store procedure de Movimentações de Estoque
+
 CREATE PROCEDURE sp_MovimentarEstoque
     @CodigoProduto INT,
     @Tipo VARCHAR(10),        -- 'Entrada' ou 'Saída'
