@@ -140,49 +140,49 @@ CREATE TABLE Movimentacoes (
     @Quantidade INT,
     @EstoqueFinal INT OUTPUT  -- Retorna a quantidade final para a aplicação
     AS
-    BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRANSACTION;
+        BEGIN
+            SET NOCOUNT ON;
+            BEGIN TRANSACTION;
 
-    DECLARE @EstoqueAtual INT;
+            DECLARE @EstoqueAtual INT;
 
-     Bloqueia a linha do produto para leitura segura (evita concorrência)
-    SELECT @EstoqueAtual = EstoqueAtual 
-    FROM Produtos WITH (UPDLOCK, HOLDLOCK) 
-    WHERE CodigoProduto = @CodigoProduto;
+            Bloqueia a linha do produto para leitura segura (evita concorrência)
+            SELECT @EstoqueAtual = EstoqueAtual 
+            FROM Produtos WITH (UPDLOCK, HOLDLOCK) 
+            WHERE CodigoProduto = @CodigoProduto;
 
-    IF @EstoqueAtual IS NULL
-    BEGIN
-        ROLLBACK TRANSACTION;
-        RAISERROR('Produto não encontrado.', 16, 1);
-        RETURN;
-    END
+            IF @EstoqueAtual IS NULL
+            BEGIN
+                ROLLBACK TRANSACTION;
+                RAISERROR('Produto não encontrado.', 16, 1);
+                RETURN;
+            END
 
-    -- Valida se há estoque suficiente para saída
-    IF @Tipo = 'Saída' AND @EstoqueAtual < @Quantidade
-    BEGIN
-        ROLLBACK TRANSACTION;
-        RAISERROR('Estoque insuficiente para realizar esta saída.', 16, 1);
-        RETURN;
-    END
+            -- Valida se há estoque suficiente para saída
+            IF @Tipo = 'Saída' AND @EstoqueAtual < @Quantidade
+            BEGIN
+                ROLLBACK TRANSACTION;
+                RAISERROR('Estoque insuficiente para realizar esta saída.', 16, 1);
+                RETURN;
+            END
 
-    -- Calcula o estoque final
-    IF @Tipo = 'Entrada'
-        SET @EstoqueFinal = @EstoqueAtual + @Quantidade;
-    ELSE
-        SET @EstoqueFinal = @EstoqueAtual - @Quantidade;
+            -- Calcula o estoque final
+            IF @Tipo = 'Entrada'
+                SET @EstoqueFinal = @EstoqueAtual + @Quantidade;
+            ELSE
+            SET @EstoqueFinal = @EstoqueAtual - @Quantidade;
 
-    -- Atualiza o saldo do produto
-    UPDATE Produtos 
-    SET EstoqueAtual = @EstoqueFinal 
-    WHERE CodigoProduto = @CodigoProduto;
+            -- Atualiza o saldo do produto
+            UPDATE Produtos 
+            SET EstoqueAtual = @EstoqueFinal 
+            WHERE CodigoProduto = @CodigoProduto;
 
-    -- Registra no histórico de movimentações
-    INSERT INTO Movimentacoes (CodigoProduto, Tipo, Descricao, QuantidadeMovimentada, EstoqueAnterior, EstoqueFinal)
-    VALUES (@CodigoProduto, @Tipo, @Descricao, @Quantidade, @EstoqueAtual, @EstoqueFinal);
+            -- Registra no histórico de movimentações
+            INSERT INTO Movimentacoes (CodigoProduto, Tipo, Descricao, QuantidadeMovimentada, EstoqueAnterior, EstoqueFinal)
+            VALUES (@CodigoProduto, @Tipo, @Descricao, @Quantidade, @EstoqueAtual, @EstoqueFinal);
 
-    COMMIT TRANSACTION;
-    END
+            COMMIT TRANSACTION;
+        END
 
 
 
