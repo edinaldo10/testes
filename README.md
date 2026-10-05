@@ -131,6 +131,8 @@ CREATE TABLE Movimentacoes (
 
 -- Criação de store procedure de Movimentações de Estoque
 
+---
+
 CREATE PROCEDURE sp_MovimentarEstoque
     @CodigoProduto INT,
     @Tipo VARCHAR(10),        -- 'Entrada' ou 'Saída'
@@ -182,7 +184,7 @@ BEGIN
     COMMIT TRANSACTION;
 END
 
-
+---
 
 ## Desafio 3. 
 
