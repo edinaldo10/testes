@@ -146,7 +146,7 @@ BEGIN
 
     DECLARE @EstoqueAtual INT;
 
-    -- Bloqueia a linha do produto para leitura segura (evita concorrência)
+     Bloqueia a linha do produto para leitura segura (evita concorrência)
     SELECT @EstoqueAtual = EstoqueAtual 
     FROM Produtos WITH (UPDLOCK, HOLDLOCK) 
     WHERE CodigoProduto = @CodigoProduto;
@@ -158,7 +158,7 @@ BEGIN
         RETURN;
     END
 
-    -- Valida se há estoque suficiente para saída
+     Valida se há estoque suficiente para saída
     IF @Tipo = 'Saída' AND @EstoqueAtual < @Quantidade
     BEGIN
         ROLLBACK TRANSACTION;
@@ -166,18 +166,18 @@ BEGIN
         RETURN;
     END
 
-    -- Calcula o estoque final
+     Calcula o estoque final
     IF @Tipo = 'Entrada'
         SET @EstoqueFinal = @EstoqueAtual + @Quantidade;
     ELSE
         SET @EstoqueFinal = @EstoqueAtual - @Quantidade;
 
-    -- Atualiza o saldo do produto
+     Atualiza o saldo do produto
     UPDATE Produtos 
     SET EstoqueAtual = @EstoqueFinal 
     WHERE CodigoProduto = @CodigoProduto;
 
-    -- Registra no histórico de movimentações
+     Registra no histórico de movimentações
     INSERT INTO Movimentacoes (CodigoProduto, Tipo, Descricao, QuantidadeMovimentada, EstoqueAnterior, EstoqueFinal)
     VALUES (@CodigoProduto, @Tipo, @Descricao, @Quantidade, @EstoqueAtual, @EstoqueFinal);
 
