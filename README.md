@@ -131,16 +131,16 @@ CREATE TABLE Movimentacoes (
 
 -- Criação de store procedure de Movimentações de Estoque
 
----
 
-CREATE PROCEDURE sp_MovimentarEstoque
+
+    CREATE PROCEDURE sp_MovimentarEstoque
     @CodigoProduto INT,
     @Tipo VARCHAR(10),        -- 'Entrada' ou 'Saída'
     @Descricao VARCHAR(255),
     @Quantidade INT,
     @EstoqueFinal INT OUTPUT  -- Retorna a quantidade final para a aplicação
-AS
-BEGIN
+    AS
+    BEGIN
     SET NOCOUNT ON;
     BEGIN TRANSACTION;
 
@@ -158,7 +158,7 @@ BEGIN
         RETURN;
     END
 
-     Valida se há estoque suficiente para saída
+    -- Valida se há estoque suficiente para saída
     IF @Tipo = 'Saída' AND @EstoqueAtual < @Quantidade
     BEGIN
         ROLLBACK TRANSACTION;
@@ -166,25 +166,25 @@ BEGIN
         RETURN;
     END
 
-     Calcula o estoque final
+    -- Calcula o estoque final
     IF @Tipo = 'Entrada'
         SET @EstoqueFinal = @EstoqueAtual + @Quantidade;
     ELSE
         SET @EstoqueFinal = @EstoqueAtual - @Quantidade;
 
-     Atualiza o saldo do produto
+    -- Atualiza o saldo do produto
     UPDATE Produtos 
     SET EstoqueAtual = @EstoqueFinal 
     WHERE CodigoProduto = @CodigoProduto;
 
-     Registra no histórico de movimentações
+    -- Registra no histórico de movimentações
     INSERT INTO Movimentacoes (CodigoProduto, Tipo, Descricao, QuantidadeMovimentada, EstoqueAnterior, EstoqueFinal)
     VALUES (@CodigoProduto, @Tipo, @Descricao, @Quantidade, @EstoqueAtual, @EstoqueFinal);
 
     COMMIT TRANSACTION;
-END
+    END
 
----
+
 
 ## Desafio 3. 
 
